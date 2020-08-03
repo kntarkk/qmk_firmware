@@ -32,6 +32,7 @@ enum custom_keycodes {
   LOWER,
   RAISE,
   KANJI,
+  RE_PUSH,
 };
 
 // #define KC_ESAD  LT(_ADJUST, KC_ESC)
@@ -40,18 +41,19 @@ enum custom_keycodes {
 #define KC_SPRA  LT(_RAISE, KC_SPC)
 #define KC_AJST  MO(_ADJUST)
 
-#define KC_A_SF  LSFT_T(KC_A)
-#define KC_Z_CT  LCTL_T(KC_Z)
 #define KC_Q_AL  LALT_T(KC_Q)
+#define KC_A_SF  LCTL_T(KC_A)
+#define KC_Z_CT  LSFT_T(KC_Z)
 #define KC_X_AL  LALT_T(KC_X)
-#define KC_ENSF  RSFT_T(KC_ENT)
+#define KC_ENSF  RCTL_T(KC_ENT)
 #define KC_SLSF  RSFT_T(KC_SLSH)
 
 #define KC_F1AL  LALT_T(KC_F1)
-#define KC_F6SF  LSFT_T(KC_F6)
-#define KC_QUSF  RSFT_T(KC_QUOT)
-#define KC_11CT  LCTL_T(KC_F11)
+#define KC_F6SF  LCTL_T(KC_F6)
+#define KC_11CT  LSFT_T(KC_F11)
 #define KC_12AL  LALT_T(KC_F12)
+#define KC_QUSF  RCTL_T(KC_QUOT)
+#define KC_ROSF  RSFT_T(KC_RO)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT(
@@ -62,7 +64,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
                KC_Z_CT, KC_X_AL,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M, KC_COMM,  KC_DOT,     KC_SLSF,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-      KC_LCTL, KC_LGUI,                                KC_SPRA,                                 KC_LOWR, KC_RCTL
+      RE_PUSH, KC_LGUI,                                KC_SPRA,                                 KC_LOWR, KC_RCTL
   //`-----------------------------------------------------------------------------------------------------------'
   ),
 
@@ -72,9 +74,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
                KC_F6SF,   KC_F7,   KC_F8,   KC_F9,  KC_F10, XXXXXXX, XXXXXXX, XXXXXXX, KC_SCLN,     KC_QUSF,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-               KC_11CT, KC_12AL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  KC_GRV,       KC_RO,
+               KC_11CT, KC_12AL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  KC_GRV,     KC_ROSF,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-      _______, _______,                                KC_AJST,                                 KC_AJST, _______
+      _______, _______,                                KC_AJST,                                 _______, _______
   //`-----------------------------------------------------------------------------------------------------------'
   ),
 
@@ -82,11 +84,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,-----------------------------------------------------------------------------------------------------------.
                   KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0, KC_MINS,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-               XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_LEFT, KC_DOWN,   KC_UP, KC_RGHT,     _______,
+               KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_LEFT, KC_DOWN,   KC_UP, KC_RGHT,     _______,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-               XXXXXXX, XXXXXXX,  KC_ESC,  KC_TAB,   KANJI,  KC_DEL, KC_COMM,  KC_DOT, KC_BSLS,     KC_RSFT,
+               KC_LSFT, XXXXXXX,  KC_ESC,  KC_TAB,   KANJI,  KC_DEL, KC_COMM,  KC_DOT, KC_BSLS,     KC_ROSF,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-      _______, _______,                                _______,                                 _______, _______
+      _______, _______,                                _______,                                 KC_AJST, _______
   //`-----------------------------------------------------------------------------------------------------------'
   ),
 
@@ -113,6 +115,7 @@ uint16_t get_tapping_term(uint16_t keycode) {
 }
 
 int RGB_current_mode;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
   bool result = false;
@@ -155,11 +158,33 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 void encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
-        if (clockwise) {
-            tap_code(KC_WH_D);
-        } else {
-            tap_code(KC_WH_U);
+        if (IS_LAYER_ON(_ADJUST)) {
+          if (clockwise) {
+              rgblight_increase_hue_noeeprom();
+          }
+          else
+          {
+              rgblight_decrease_hue_noeeprom();
+          }
         }
+        else if (IS_LAYER_ON(_LOWER)) {
+          if (clockwise) {
+            SEND_STRING(SS_LCTL("y"));
+          } else {
+            SEND_STRING(SS_LCTL("z"));
+          }
+        }
+        else if (IS_LAYER_ON(_RAISE)) {
+          if (clockwise) {
+            SEND_STRING(SS_DOWN(X_LSFT)SS_TAP(X_DOWN)SS_UP(X_LSFT));
+          } else {
+            SEND_STRING(SS_DOWN(X_LSFT)SS_TAP(X_UP)SS_UP(X_LSFT));
+          }
+        }
+        else {
+          tap_code((clockwise == true) ? KC_WH_D : KC_WH_U);
+        }
+
     }
 }
 
@@ -168,3 +193,23 @@ void keyboard_post_init_user(void) {
     RGB_current_mode = rgblight_config.mode;
   #endif
 }
+
+// for exsample customize of LED inducator
+// bool led_set_keymap(uint8_t usb_led) {
+
+//     if (IS_LAYER_ON(_LOWER)) {
+//         writePinHigh(D2);
+//     }
+//     else {
+//        writePinLow(D2);
+//     }
+
+//     if (IS_LAYER_ON(_RAISE)) {
+//         writePinHigh(D1);
+//     }
+//     else {
+//         writePinLow(D1);
+//     }
+
+//     return true;
+// }
