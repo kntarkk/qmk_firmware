@@ -51,7 +51,7 @@ bool led_update_kb(led_t led_state) {
 
 void keyboard_pre_init_user(void) {
   /* Set CAPSLOCK indicator pin as output */
-  setPinOutput(D0);
+  setPinOutput(D1);
   /* Set NUMLOCK indicator pin as output */
   setPinOutput(D2);
 }
@@ -63,16 +63,16 @@ void led_set_user(uint8_t usb_led) {
   if (led_set_keymap(usb_led)) return;
 
   if (IS_LED_ON(usb_led, USB_LED_CAPS_LOCK)) {
-    writePinLow(D0);
+    writePinHigh(D1);
   }
   else {
-    writePinHigh(D0);
+    writePinLow(D1);
   }
 
   if (IS_LED_ON(usb_led, USB_LED_NUM_LOCK)) {
-    writePinLow(D2);
+    writePinHigh(D2);
   }
   else {
-    writePinHigh(D2);
+    writePinLow(D2);
   }
 }

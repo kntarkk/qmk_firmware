@@ -6,3 +6,4 @@
 # If your custom treadstone32 pcb, you can rewrite to yes.
 RGBLIGHT_ENABLE = yes  # LED underglow (Enable WS2812 RGB underlight.)
 MOUSEKEY_ENABLE = yes       # Mouse keys
+ENCODER_ENABLE = yes

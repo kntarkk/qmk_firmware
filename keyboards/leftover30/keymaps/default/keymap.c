@@ -15,6 +15,11 @@
  */
 #include QMK_KEYBOARD_H
 
+#ifdef RGBLIGHT_ENABLE
+//Following line allows macro to read current RGB settings
+extern rgblight_config_t rgblight_config;
+#endif
+
 enum layer_number {
   _BASE = 0,
   _LOWER,
@@ -91,7 +96,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
                RGB_TOG, RGB_HUI, RGB_SAI, RGB_VAI, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R,     KC_NLCK,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-               XXXXXXX, RGB_MOD, RGB_HUD, RGB_SAD, RGB_VAD, XXXXXXX, KC_BTN1, KC_BTN2, XXXXXXX,     KC_CAPS,
+               RGB_MOD, RGB_HUD, RGB_SAD, RGB_VAD, XXXXXXX, KC_BTN1, KC_BTN2, XXXXXXX, XXXXXXX,     KC_CAPS,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
       _______, _______,                                _______,                                 _______, _______
   //`-----------------------------------------------------------------------------------------------------------'
@@ -107,6 +112,7 @@ uint16_t get_tapping_term(uint16_t keycode) {
   }
 }
 
+int RGB_current_mode;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
   bool result = false;
@@ -122,6 +128,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         unregister_code(KC_LANG2);
       }
       break;
+#ifdef RGBLIGHT_ENABLE
+    //led operations - RGB mode change now updates the RGB_current_mode to allow the right RGB mode to be set after reactive keys are released
+    case RGB_MOD:
+        if (record->event.pressed) {
+        rgblight_mode(RGB_current_mode);
+        rgblight_step();
+        RGB_current_mode = rgblight_config.mode;
+        }
+    break;
+    case RGBRST:
+        if (record->event.pressed) {
+        eeconfig_update_rgblight_default();
+        rgblight_enable();
+        RGB_current_mode = rgblight_config.mode;
+        }
+    break;
+#endif
     default:
       result = true;
       break;
@@ -138,4 +161,10 @@ void encoder_update_user(uint8_t index, bool clockwise) {
             tap_code(KC_WH_U);
         }
     }
+}
+
+void keyboard_post_init_user(void) {
+  #ifdef RGBLIGHT_ENABLE
+    RGB_current_mode = rgblight_config.mode;
+  #endif
 }
