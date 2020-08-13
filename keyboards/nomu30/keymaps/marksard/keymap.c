@@ -35,8 +35,8 @@ enum custom_keycodes {
 #define KC_MLAD  MO(_ADJUST)
 
 // Base layer mod tap
-#define KC_CMSF  LSFT_T(KC_COMM)
-#define KC_DTCT  LCTL_T(KC_DOT)
+#define KC_CMSF  LCTL_T(KC_COMM)
+#define KC_DTCT  LSFT_T(KC_DOT)
 #define KC_Z_AL  LALT_T(KC_Z)
 #define KC_X_GU  LGUI_T(KC_X)
 #define KC_ENSF  LSFT_T(KC_ENT)
@@ -73,7 +73,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,-----------------------------------------------------------------------------------------------------------------------.
                    KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,  KC_MINS,   KC_EQL,  KC_JYEN,  KC_LBRC,  KC_RBRC,  _______,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       _______,    KC_F6,    KC_F7,    KC_F8,    KC_F9,   KC_F10,  XXXXXXX,  XXXXXXX,  KC_SCLN,  KC_QUOT,  KC_BSSF,
+       _______,    KC_F6,    KC_F7,    KC_F8,    KC_F9,   KC_F10,   KC_GRV,    KC_RO,  KC_SCLN,  KC_QUOT,  KC_BSSF,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
        _______,  KC_11AL,   KC_F12,   KC_ESC,   KC_TAB,    KANJI,  KC_COMM,   KC_DOT,  KC_MLAD
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------'
@@ -81,21 +81,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_RAISE] = LAYOUT(
   //,-----------------------------------------------------------------------------------------------------------------------.
-                    KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,   KC_DEL,
+                    KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,  KC_MLAD,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
        _______,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_LEFT,  KC_DOWN,    KC_UP,  KC_RGHT,  KC_LSFT,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       _______,  KC_LALT,  KC_LGUI,  XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_SLSH,    KC_RO,  _______
+       _______,  KC_LALT,  KC_LGUI,   KC_ESC,   KC_TAB,    KANJI,   KC_DEL,  KC_SLSH,  _______
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------'
   ),
 
   [_ADJUST] = LAYOUT(
   //,-----------------------------------------------------------------------------------------------------------------------.
-                   RESET,   RGBRST,  AG_NORM,  AG_SWAP,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  _______,
+                   RESET,   RGBRST,  AG_NORM,  AG_SWAP,  XXXXXXX,  XXXXXXX,  XXXXXXX,   KC_INS,  KC_PSCR,  KC_NLCK,  _______,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       _______,  RGB_TOG,  RGB_HUI,  RGB_SAI,  RGB_VAI,  XXXXXXX,  KC_MS_L,  KC_MS_D,  KC_MS_U,  KC_MS_R,  XXXXXXX,
+       _______,  RGB_TOG,  RGB_HUI,  RGB_SAI,  RGB_VAI,  XXXXXXX,  KC_MS_L,  KC_MS_D,  KC_MS_U,  KC_MS_R,  KC_CAPS,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
-       _______,  RGB_MOD,  RGB_HUD,  RGB_SAD,  RGB_VAD,  XXXXXXX,  KC_BTN1,  KC_BTN2,  XXXXXXX
+       _______,  RGB_MOD,  RGB_HUD,  RGB_SAD,  RGB_VAD,  XXXXXXX,  KC_BTN1,  KC_BTN2,  _______
   //`---------+---------+---------+---------+---------+---------+---------+---------+---------'
   )
 };
