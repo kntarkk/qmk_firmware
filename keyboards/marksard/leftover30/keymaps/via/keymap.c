@@ -15,24 +15,18 @@
  */
 #include QMK_KEYBOARD_H
 
-#ifdef RGBLIGHT_ENABLE
-//Following line allows macro to read current RGB settings
-extern rgblight_config_t rgblight_config;
-#endif
-
 enum layer_number {
-  _BASE = 0,
-  _LOWER,
-  _RAISE,
-  _ADJUST,
+    _BASE,
+    _LOWER,
+    _RAISE,
+    _ADJUST,
 };
 
 enum custom_keycodes {
-  RGBRST = SAFE_RANGE,
-  LOWER,
-  RAISE,
-  KANJI,
-  RE_PUSH,
+    RGBRST = SAFE_RANGE,
+    LOWER,
+    RAISE,
+    KANJI,
 };
 
 // #define KC_ESAD  LT(_ADJUST, KC_ESC)
@@ -45,7 +39,7 @@ enum custom_keycodes {
 #define KC_A_CT  LCTL_T(KC_A)
 #define KC_Z_SF  LSFT_T(KC_Z)
 #define KC_X_AL  LALT_T(KC_X)
-#define KC_ENCT  RCTL_T(KC_ENT)
+#define KC_ENSF  RSFT_T(KC_ENT)
 #define KC_SLSF  RSFT_T(KC_SLSH)
 
 #define KC_F1AL  LALT_T(KC_F1)
@@ -60,11 +54,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,-----------------------------------------------------------------------------------------------------------.
                KC_Q_AL,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P, KC_BSPC,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-               KC_A_CT,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,     KC_ENCT,
+               KC_A_CT,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,     KC_ENSF,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
                KC_Z_SF, KC_X_AL,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M, KC_COMM,  KC_DOT,     KC_SLSF,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-      RE_PUSH, KC_LGUI,                                KC_SPRA,                                 KC_LOWR, KC_RCTL
+      KC_LCTL, KC_LGUI,                                KC_SPRA,                                 KC_LOWR, KC_RCTL
   //`-----------------------------------------------------------------------------------------------------------'
   ),
 
@@ -74,7 +68,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
                KC_F6CT,   KC_F7,   KC_F8,   KC_F9,  KC_F10, XXXXXXX, XXXXXXX, XXXXXXX, KC_SCLN,     KC_QUSF,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-               KC_11SF, KC_12AL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  KC_GRV,     KC_ROSF,
+               KC_11SF, KC_12AL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  KC_GRV,   KC_RO, KC_SLSH,     KC_ROSF,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
       _______, _______,                                KC_AJST,                                 _______, _______
   //`-----------------------------------------------------------------------------------------------------------'
@@ -100,7 +94,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
                RGB_MOD, RGB_HUD, RGB_SAD, RGB_VAD, XXXXXXX, KC_BTN1, KC_BTN2, XXXXXXX, XXXXXXX,     KC_CAPS,
   //|--------+--------+--------+--------+--------+--------|--------+--------+--------+--------+--------+--------|
-      _______, _______,                                _______,                                 _______, _______
+      _______, _______,                                _______,                                 _______, KC_CAPS
   //`-----------------------------------------------------------------------------------------------------------'
   )
 };
@@ -114,37 +108,22 @@ uint16_t get_tapping_term(uint16_t keycode) {
   }
 }
 
-int RGB_current_mode;
-
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
   bool result = false;
   switch (keycode) {
     case KANJI:
       if (record->event.pressed) {
-        if (keymap_config.swap_lalt_lgui == false) {
-          register_code(KC_LANG2);
-        } else {
-          SEND_STRING(SS_LALT("`"));
-        }
+          register_code16(keymap_config.swap_lalt_lgui ? A(KC_GRV) : KC_LANG2);
       } else {
-        unregister_code(KC_LANG2);
+          unregister_code16(keymap_config.swap_lalt_lgui ? A(KC_GRV) : KC_LANG2);
       }
-      break;
-#ifdef RGBLIGHT_ENABLE
-    //led operations - RGB mode change now updates the RGB_current_mode to allow the right RGB mode to be set after reactive keys are released
-    case RGB_MOD:
-        if (record->event.pressed) {
-        rgblight_mode(RGB_current_mode);
-        rgblight_step();
-        RGB_current_mode = rgblight_config.mode;
-        }
     break;
+#ifdef RGBLIGHT_ENABLE
     case RGBRST:
         if (record->event.pressed) {
-        eeconfig_update_rgblight_default();
-        rgblight_enable();
-        RGB_current_mode = rgblight_config.mode;
+          eeconfig_update_rgblight_default();
+          rgblight_enable();
         }
     break;
 #endif
@@ -161,55 +140,23 @@ void encoder_update_user(uint8_t index, bool clockwise) {
         if (IS_LAYER_ON(_ADJUST)) {
           if (clockwise) {
               rgblight_increase_hue_noeeprom();
-          }
-          else
-          {
+          } else {
               rgblight_decrease_hue_noeeprom();
           }
-        }
-        else if (IS_LAYER_ON(_LOWER)) {
-          if (clockwise) {
-            SEND_STRING(SS_LCTL("y"));
-          } else {
-            SEND_STRING(SS_LCTL("z"));
-          }
-        }
-        else if (IS_LAYER_ON(_RAISE)) {
-          if (clockwise) {
-            SEND_STRING(SS_DOWN(X_LSFT)SS_TAP(X_DOWN)SS_UP(X_LSFT));
-          } else {
-            SEND_STRING(SS_DOWN(X_LSFT)SS_TAP(X_UP)SS_UP(X_LSFT));
-          }
-        }
-        else {
+        } else if (IS_LAYER_ON(_LOWER)) {
+          tap_code16((clockwise == true) ? LCTL(KC_Y) : LCTL(KC_Z));
+        } else if (IS_LAYER_ON(_RAISE)) {
+          tap_code16((clockwise == true) ? S(KC_DOWN) : S(KC_UP));
+        } else {
           tap_code((clockwise == true) ? KC_WH_D : KC_WH_U);
         }
 
     }
 }
 
-void keyboard_post_init_user(void) {
-  #ifdef RGBLIGHT_ENABLE
-    RGB_current_mode = rgblight_config.mode;
-  #endif
-}
-
 // for exsample customize of LED inducator
-// bool led_set_keymap(uint8_t usb_led) {
-
-//     if (IS_LAYER_ON(_LOWER)) {
-//         writePinHigh(D2);
-//     }
-//     else {
-//        writePinLow(D2);
-//     }
-
-//     if (IS_LAYER_ON(_RAISE)) {
-//         writePinHigh(D1);
-//     }
-//     else {
-//         writePinLow(D1);
-//     }
-
-//     return true;
+// bool led_update_user(led_t led_state) {
+//     writePin(D2, IS_LAYER_ON(_LOWER));
+//     writePin(D1, IS_LAYER_ON(_RAISE));
+//     return false;
 // }
