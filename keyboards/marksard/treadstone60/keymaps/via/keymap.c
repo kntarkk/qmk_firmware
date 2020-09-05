@@ -16,7 +16,7 @@
 #include QMK_KEYBOARD_H
 
 enum layer_number {
-  _BASE = 0,
+  _BASE,
   _LOWER,
   _ADJUST,
 };
@@ -87,23 +87,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case KANJI:
       if (record->event.pressed) {
-        if (keymap_config.swap_lalt_lgui == false) {
-          register_code(KC_LANG2);
-        } else {
-          SEND_STRING(SS_LALT("`"));
-        }
+          register_code16(keymap_config.swap_lalt_lgui ? A(KC_GRV) : KC_LANG2);
       } else {
-        unregister_code(KC_LANG2);
+          unregister_code16(keymap_config.swap_lalt_lgui ? A(KC_GRV) : KC_LANG2);
       }
-      break;
-    #ifdef RGBLIGHT_ENABLE
-      case RGBRST:
-          if (record->event.pressed) {
-            eeconfig_update_rgblight_default();
-            rgblight_enable();
-          }
-        break;
-    #endif
+    break;
+#ifdef RGBLIGHT_ENABLE
+    case RGBRST:
+        if (record->event.pressed) {
+          eeconfig_update_rgblight_default();
+          rgblight_enable();
+        }
+    break;
+#endif
     default:
       result = true;
       break;
