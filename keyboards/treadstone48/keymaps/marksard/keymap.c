@@ -194,7 +194,7 @@ void oled_task_user(void) {
 
 #endif
 
-uint16_t get_tapping_term(uint16_t keycode) {
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case KC_BSLO:
       return TAPPING_LAYER_TERM;
