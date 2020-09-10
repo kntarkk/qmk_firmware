@@ -16,12 +16,8 @@
 #include QMK_KEYBOARD_H
 #include "./common/oled_helper.h"
 
-// Each layer gets a name for readability, which is then used in the keymap matrix below.
-// The underscores don't mean anything - you can have a layer called STUFF or any other name.
-// Layer names don't all need to be of the same length, obviously, and you can also skip them
-// entirely and just use numbers.
 enum layer_number {
-  _BASE = 0,
+  _BASE,
   _LOWER,
   _RAISE,
   _ADJUST,
@@ -44,7 +40,7 @@ enum custom_keycodes {
 #define KC_GRSF  RSFT_T(KC_GRV)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-  [_BASE] = LAYOUT( \
+  [_BASE] = LAYOUT_ortho_4x10(
   //,---------------------------------------------------------------------------------------------------.
           KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -56,7 +52,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,---------------------------------------------------------------------------------------------------.
   ),
 
-  [_LOWER] = LAYOUT( \
+  [_LOWER] = LAYOUT_ortho_4x10(
   //,---------------------------------------------------------------------------------------------------.
          KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,  KC_MINS,   KC_EQL,  KC_LBRC,  KC_RBRC,  KC_BSLS,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -68,7 +64,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,---------------------------------------------------------------------------------------------------.
   ),
 
-  [_RAISE] = LAYOUT( \
+  [_RAISE] = LAYOUT_ortho_4x10(
   //,---------------------------------------------------------------------------------------------------.
           KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -80,7 +76,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,---------------------------------------------------------------------------------------------------.
   ),
 
-  [_ADJUST] = LAYOUT( \
+  [_ADJUST] = LAYOUT_ortho_4x10(
   //,---------------------------------------------------------------------------------------------------.
          RESET,   RGBRST,  AG_NORM,  AG_SWAP,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,   KC_INS,  KC_PSCR,
   //|---------+---------+---------+---------+---------+---------+---------+---------+---------+---------|
@@ -151,7 +147,6 @@ static inline void render_status(void) {
   UPDATE_LED_STATUS();
   RENDER_LED_STATUS();
   render_keymap_status();
-  UPDATE_LOCK_STATUS();
   RENDER_LOCK_STATUS();
   RENDER_KEY_STATUS();
 }
@@ -178,12 +173,6 @@ void oled_task_user(void) {
 
 #endif
 
-static inline void update_change_layer(bool pressed, uint8_t layer1, uint8_t layer2, uint8_t layer3) {
-
-  pressed ? layer_on(layer1) : layer_off(layer1);
-  IS_LAYER_ON(layer1) && IS_LAYER_ON(layer2) ? layer_on(layer3) : layer_off(layer3);
-}
-
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
   UPDATE_KEY_STATUS(keycode, record);
@@ -191,17 +180,29 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   bool result = false;
   switch (keycode) {
     case LOWER:
-      update_change_layer(record->event.pressed, _LOWER, _RAISE, _ADJUST);
+      if (record->event.pressed) {
+        layer_on(_LOWER);
+      } else {
+        layer_off(_LOWER);
+      }
+
+      update_tri_layer(_LOWER, _RAISE, _ADJUST);
       break;
     case RAISE:
-      update_change_layer(record->event.pressed, _RAISE, _LOWER, _ADJUST);
-        break;
+      if (record->event.pressed) {
+        layer_on(_RAISE);
+      } else {
+        layer_off(_RAISE);
+      }
+
+      update_tri_layer(_LOWER, _RAISE, _ADJUST);
+      break;
     case KANJI:
       if (record->event.pressed) {
         if (keymap_config.swap_lalt_lgui == false) {
           register_code(KC_LANG2);
         } else {
-          SEND_STRING(SS_LALT("`"));
+          register_code16(A(KC_GRV));
         }
       } else {
         unregister_code(KC_LANG2);
